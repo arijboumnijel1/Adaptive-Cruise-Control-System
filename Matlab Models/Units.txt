@@ -1,0 +1,16 @@
+mass_of_the_vehicle : kg
+max_drive_wheel_torque_cst : N*m
+Wheel_Radius_cst : m
+max_brake_torque_per_wheel_cst : N*m  (per wheel)
+acceleration_due_to_gravity_cst : m/s^2
+C_rr : dimensionless
+k_drag : N/(m/s)^2   (= kg/m)
+
+INPUTS (for reference):
+throttle_pedal_command_normalized_0_to_1 : dimensionless (0..1)
+brake_pedal_command_normalized_0_to_1 : dimensionless (0..1)
+road_incline_angle : rad
+
+INITIAL CONDITIONS (for reference):
+Initial_Speed : m/s
+Initial_Position : m
