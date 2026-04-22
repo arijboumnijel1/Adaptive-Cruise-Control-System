@@ -1,6 +1,6 @@
 # Adaptive-Cruise-Control-System
 
-This repository documents the development of an **ADAS Adaptive Cruise Control (ACC)** function using an **end-to-end workflow aligned with automotive engineering practices**. The work is structured to support traceability, modularity, and progressive verification in a way that is consistent with the intent of **ISO 26262** (functional safety) development processes.
+This repository documents the development of an **ADAS Adaptive Cruise Control (ACC)** function **aligned with automotive engineering practices**. The work is structured to support traceability, modularity, and progressive verification in a way that is consistent with the intent of **ISO 26262** (functional safety) development processes.
 
 The solution is organized into **four complementary work packages**, covering the pipeline from perception outputs to controller verification and validation.
 
