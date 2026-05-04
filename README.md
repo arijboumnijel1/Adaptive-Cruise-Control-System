@@ -72,3 +72,21 @@ To align with automotive development and safety-oriented verification strategies
 
 ---
 
+## 📊 Project Progress
+
+### 1. Model-Based Design (MBD) - Vehicle Dynamics
+- [x] **Validated Dynamic Model:** Developed `Vehicle_Dynamics.slx`, a high-fidelity longitudinal model including aerodynamic drag, rolling resistance, and mass inertia.
+- [x] **Open-Loop Validation:** Verified model response against theoretical curves (Acceleration/Braking) in `validate_dynamics_open_loop.m`.
+- [x] **Initialization:** Centralized parameters in `init_params.m` using SI units.
+
+### 2. Perception & AI Environment
+- [x] **Environment Setup:** Configured Python environment with PyTorch and nuScenes-devkit.
+- [x] **Dataset Preparation:** Downloaded and integrated **nuScenes-mini** for testing AI perception on real-world scenarios.
+- [x] **Data Extraction:** Created `extract_acc_data.py` to bridge nuScenes data with MATLAB/Simulink (Ground Truth extraction for scene-0061).
+
+### 3. Next Steps
+- Implement relative distance transformation in the data extraction pipeline.
+- Initialize YOLO-based vehicle detection on nuScenes front camera frames.
+- Begin EKF (Extended Kalman Filter) development for sensor fusion in MATLAB.
+
+
