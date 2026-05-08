@@ -79,10 +79,34 @@ To align with automotive development and safety-oriented verification strategies
 - [x] **Open-Loop Validation:** Verified model response against theoretical curves (Acceleration/Braking) in `validate_dynamics_open_loop.m`.
 - [x] **Initialization:** Centralized parameters in `init_params.m` using SI units.
 
+#### Vehicle Dynamics Model Overview
+The longitudinal dynamics model captures the physical response of the ego vehicle to throttle and brake commands.
+
+![Simulink Vehicle Dynamics Model](images/Vehicle_Dynamics.jpg)
+
+#### Performance Validation
+Validation tests confirm the model's accuracy in representing acceleration and deceleration phases.
+
+<p align="center">
+  <img src="images/dynamic_open_loop_fig.jpg" width="45%" />
+  <img src="images/Vehicle_Model_Test_Results.jpg" width="45%" />
+</p>
+
 ### 2. Perception & AI Environment
 - [x] **Environment Setup:** Configured Python environment with PyTorch and nuScenes-devkit.
 - [x] **Dataset Preparation:** Downloaded and integrated **nuScenes-mini** for testing AI perception on real-world scenarios.
 - [x] **Data Extraction:** Created `extract_acc_data.py` to bridge nuScenes data with MATLAB/Simulink (Ground Truth extraction for scene-0061).
+- [x] **YOLO Perception:** Implemented YOLOv8 vehicle detection and distance estimation.
+
+#### Vision-Based Detection (YOLOv8)
+The perception module uses YOLOv8 for real-time vehicle detection. Distance is estimated using a calibrated monocular vision algorithm.
+
+![YOLOv8 Detection on nuScenes](images/yolo_det_example.jpg)
+
+**Key Results:**
+- **Accuracy:** Mean Absolute Error (MAE) < 0.1m for fully visible targets within 30m.
+- **Limitations:** Higher error rates for truncated vehicles (distance estimation sensitive to bounding box height) and extreme lighting conditions.
+- **Data Bridge:** Successfully extracted 41 frames with distance ground truth from nuScenes `scene-0061` for calibration.
 
 ### 3. Next Steps
 - Implement relative distance transformation in the data extraction pipeline.
