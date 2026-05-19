@@ -94,23 +94,37 @@ Validation tests confirm the model's accuracy in representing acceleration and d
 
 ### 2. Perception & AI Environment
 - [x] **Environment Setup:** Configured Python environment with PyTorch and nuScenes-devkit.
-- [x] **Dataset Preparation:** Downloaded and integrated **nuScenes-mini** for testing AI perception on real-world scenarios.
-- [x] **Data Extraction:** Created `extract_acc_data.py` to bridge nuScenes data with MATLAB/Simulink (Ground Truth extraction for scene-0061).
+- [x] **Dataset Preparation:** Downloaded and integrated **nuScenes-mini**.
+- [x] **Data Extraction:** Created `extract_radar_data.py` to bridge nuScenes data with MATLAB.
 - [x] **YOLO Perception:** Implemented YOLOv8 vehicle detection and distance estimation.
+- [x] **Sensor Fusion:** Implemented Linear Kalman Filter (LKF) to merge Radar and Vision data.
+- [x] **Data Import:** Created `import_fusion_data.m` to generate timeseries for Simulink.
 
-#### Vision-Based Detection (YOLOv8)
-The perception module uses YOLOv8 for real-time vehicle detection. Distance is estimated using a calibrated monocular vision algorithm.
+#### Sensor Fusion & Data Import
+The perception pipeline concludes with a fusion stage that stabilizes the target tracking.
 
-![YOLOv8 Detection on nuScenes](images/yolo_det_example.jpg)
+<p align="center">
+  <img src="images/kalman_fusion_result.jpg" width="45%" />
+  <img src="images/data_imported.jpg" width="45%" />
+</p>
 
-**Key Results:**
-- **Accuracy:** Mean Absolute Error (MAE) < 0.1m for fully visible targets within 30m.
-- **Limitations:** Higher error rates for truncated vehicles (distance estimation sensitive to bounding box height) and extreme lighting conditions.
-- **Data Bridge:** Successfully extracted 41 frames with distance ground truth from nuScenes `scene-0061` for calibration.
+### 3. ACC Control Development (WP2)
+- [x] **Supervisory Logic:** Developed `ACC_Mode_Manager.slx` using Stateflow for mode management (Standby, Speed, Gap).
+- [x] **Longitudinal Control:** Implemented `ACC_Controller.slx` with dual PID loops and safety saturation ($\pm 0.2g$).
 
-### 3. Next Steps
-- Implement relative distance transformation in the data extraction pipeline.
-- Initialize YOLO-based vehicle detection on nuScenes front camera frames.
-- Begin EKF (Extended Kalman Filter) development for sensor fusion in MATLAB.
+#### Mode Manager & PID Controller
+The controller architecture separates high-level decision making from low-level regulation.
+
+<p align="center">
+  <img src="images/ACC_Mode_Manager.png" width="80%" />
+</p>
+<p align="center">
+  <img src="images/ACC_Controller_overview.png" width="80%" />
+</p>
+
+### 4. Next Steps
+- Integrate the controller with the vehicle dynamics model in a closed-loop simulation.
+- Implement the Vehicle Control Interface (VCI) for throttle/brake mapping.
+- Tune PID gains for optimal comfort and safety.
 
 

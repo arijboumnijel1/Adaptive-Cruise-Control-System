@@ -5,6 +5,12 @@
 init_params;
 model_name = 'Vehicle_Dynamics';
 
+% --- AJOUT : Gestion automatique du chemin ---
+script_path = fileparts(mfilename('fullpath'));
+models_path = fullfile(script_path, '..', '02_Models');
+addpath(models_path);
+% ----------------------------------------------
+
 % 2. Scenario Definition
 t_end = 50;             
 Ts = 0.01;              
