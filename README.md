@@ -111,6 +111,9 @@ The perception pipeline concludes with a fusion stage that stabilizes the target
 ### 3. ACC Control Development (WP2)
 - [x] **Supervisory Logic:** Developed `ACC_Mode_Manager.slx` using Stateflow for mode management (Standby, Speed, Gap).
 - [x] **Longitudinal Control:** Implemented `ACC_Controller.slx` with dual PID loops and safety saturation ($\pm 0.2g$).
+- [x] **Vehicle Control Interface (VCI):** Implemented physics-based model inversion with a $15\text{ N}$ deadband.
+- [x] **Closed-Loop Integration:** Built the global `ACC_System_Closed_Loop.slx` model and resolved algebraic loops and standstill division-by-zero anomalies.
+- [x] **MIL Performance Audit:** Simulated and audited the closed-loop system over a $30\text{ s}$ nuScenes sensor fusion replay.
 
 #### Mode Manager & PID Controller
 The controller architecture separates high-level decision making from low-level regulation.
@@ -122,9 +125,57 @@ The controller architecture separates high-level decision making from low-level 
   <img src="images/ACC_Controller_overview.png" width="80%" />
 </p>
 
-### 4. Next Steps
-- Integrate the controller with the vehicle dynamics model in a closed-loop simulation.
-- Implement the Vehicle Control Interface (VCI) for throttle/brake mapping.
-- Tune PID gains for optimal comfort and safety.
+### 4. Closed-Loop Integration (MIL) & Vehicle Control Interface (VCI)
+To bridge the high-level ACC controller with the physical vehicle model (`Vehicle_Dynamics.slx`), a low-level **Vehicle Control Interface (VCI)** block was designed and integrated into the global closed-loop model **`ACC_System_Closed_Loop.slx`**.
+
+The VCI applies dynamic model inversion (Feedback Linearization) to translate the acceleration demand ($a_{cmd}$) into exclusive throttle ($u_{th}$) and brake ($u_{br}$) actuator commands, compensating in real-time for resistive forces (aerodynamic drag, rolling resistance, and gravity road slope):
+
+$$F_{req} = m_{eff} \cdot a_{cmd} + F_{aero} + F_{roll} + F_{slope}$$
+
+#### Closed-Loop Simulink Model Overview
+Below is the full layout of the integrated Model-in-the-Loop (MIL) simulation platform:
+
+<p align="center">
+  <img src="images/ACC_System_Closed_Loop.png" width="90%" />
+  <br><em>Simulink Closed-Loop Integration Platform (ACC_System_Closed_Loop.slx)</em>
+</p>
+
+#### Vehicle Control Interface Subsystem
+Below is the internal structure of the VCI block performing feedback linearization:
+
+<p align="center">
+  <img src="images/Vehicle_Control_Interface.png" width="90%" />
+  <br><em>Internal layout of the VCI block (Inverse Dynamics)</em>
+</p>
+
+#### Functional Safety & Physical Stabilization (ISO 26262):
+- **Strict Actuator Interlocking ($u_{th} \cdot u_{br} == 0$):** A $15\text{ N}$ force deadband prevents overlapping throttle and brake pedal inputs, protecting the physical actuators from overheating.
+- **Algebraic Loop Resolution:** A $10\text{ ms}$ `Unit Delay` block was introduced in the speed feedback loop ($V_{ego}$), representing realistic CAN bus propagation delay and stabilizing the simulation solver.
+- **Standstill Division-by-Zero Protection:** Saturated the headway time gap denominator at $V_{ego} \ge 0.5\text{ m/s}$ to prevent infinite gap divergence and mode manager logic failures at a complete stop.
+
+#### Unit VCI Validation Results
+The VCI allocation logic was validated under a harmonic acceleration command profile using `validate_vci_logic.m`:
+
+<p align="center">
+  <img src="images/VCI_validation_test.jpg" width="80%" />
+  <br><em>Standalone VCI validation curves (Requested forces vs Actuator commands)</em>
+</p>
+
+#### Global Closed-Loop MIL Simulation Results
+The closed-loop system was simulated over a $30\text{ s}$ replay of actual nuScenes data (`scene-0061`) using a fixed-step **`ode3` solver at 10 ms**:
+
+<p align="center">
+  <img src="images/ACC_validation_test.jpg" width="90%" />
+  <br><em>Closed-Loop MIL simulation results (Vset vs Vego, Clearance vs Dsafe, VCI pedals and Active Mode)</em>
+</p>
+
+- **Distance Regulation:** Highly stable tracking of the dynamic safety clearance ($D_{safe}$), with a **mean spacing error of only $11.07\text{ m}$** during the active Gap Control phase.
+- **Safety Interlocking:** Zero pedal overlap detected in steady-state.
+- **Stateflow Logic Compliance:** At $t = 22\text{ s}$, as the target vehicle slows down below the minimum ACC activation threshold of $40\text{ km/h}$, the supervisory logic automatically deactivates and safely transitions from `GAP` (3) to `STANDBY` (1), in accordance with safety requirement **`REQ-DEACT-02`**.
+
+### 5. Next Steps
+- [ ] Tune PID gains for optimal comfort and safety (PI speed loop, PID gap loop).
+- [ ] Design and implement integrated bumpless transfer strategies for mode transitions.
+- [ ] Implement Driving Scenario Designer models to run repeatable test coverages.
 
 

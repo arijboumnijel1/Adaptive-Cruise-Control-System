@@ -2,7 +2,7 @@
 % This script initializes all constants and parameters for the 
 % Intelligent Autonomous Driving System (ACC) simulation.
 
-clear; clc;
+% clear; clc;
 
 %% 1. Conversion Factors
 kmh_to_ms = 1/3.6;
