@@ -173,9 +173,47 @@ The closed-loop system was simulated over a $30\text{ s}$ replay of actual nuSce
 - **Safety Interlocking:** Zero pedal overlap detected in steady-state.
 - **Stateflow Logic Compliance:** At $t = 22\text{ s}$, as the target vehicle slows down below the minimum ACC activation threshold of $40\text{ km/h}$, the supervisory logic automatically deactivates and safely transitions from `GAP` (3) to `STANDBY` (1), in accordance with safety requirement **`REQ-DEACT-02`**.
 
-### 5. Next Steps
-- [ ] Tune PID gains for optimal comfort and safety (PI speed loop, PID gap loop).
-- [ ] Design and implement integrated bumpless transfer strategies for mode transitions.
-- [ ] Implement Driving Scenario Designer models to run repeatable test coverages.
+### 5. Cascaded Loop Tuning & Transient Jerk Mitigation (WP2 - Week 10)
+To optimize tracking performance while ensuring high passenger comfort, the cascaded control loop was calibrated and audited using `sweep_pid_gains.m` and `tune_and_validate_acc.m`:
+
+* **Inner Speed Loop (PI):** Tuned first by disabling the outer gap loop. Gains $K_p = 1.0$, $K_i = 0.05$ achieve a swift rise time ($T_r \approx 1.5\text{ s}$) and $0\%$ overshoot to torque disturbances.
+* **Outer Gap Loop (PID):** Regulates the spacing error $e_d = d_{rel} - d_{safe}$ using a PID controller with derivative filtering ($N = 50$). Gains $K_p = 0.6$, $K_i = 0.005$, $K_d = 0.1$ ensure a phase margin $M_\phi \ge 60^\circ$ for robust disturbance rejection.
+* **Bumpless Transfer (Integrator Reset):** Designed clamping (anti-windup) and dynamic integrator reset logic. During switching from Speed to Gap mode, the outer PID integrator is initialized to the current acceleration state to prevent sudden actuator command jumps.
+
+<p align="center">
+  <img src="images/Speed_Loop_Step_Response.jpg" width="32%" />
+  <img src="images/Closed_Loop_Spacing_Error.jpg" width="32%" />
+  <img src="images/Bumpless_Jerk_Comparison.jpg" width="32%" />
+</p>
+
+*   **Jerk Reduction:** Implementing the integrator reset reduced the transient jerk peak from **$28.4\text{ m/s}^3$** down to **$1.8\text{ m/s}^3$**, representing a **$93.6\%$ improvement** in ride comfort.
+
+---
+
+### 6. Virtual 3D Environment & Online Closed-Loop Validation (WP3 - Week 11)
+Transitioned the simulation platform from offline CSV data replay to an online closed-loop simulation using MATLAB's **Driving Scenario Designer** and the **Scenario Reader** block.
+
+* **Closed-Loop Ego Feedback:** Routed the physical vehicle's position ($x_{ego}$) and velocity ($v_{ego}$) back to the Scenario Reader's ego port.
+* **Discrete Sample-Time Synchronization:** Introduced a 10 ms `Delay_X_ego` unit delay on position and configured all input Constants feeding the `Bus Creator` block with a discrete `0.01s` sample time. This eliminated sample-time mismatch compilation failures.
+* **Header and Extraction:** Configured a `Bus Selector` to extract the relative distance ($d_{rel}$) and relative speed ($v_{rel}$) in vehicle coordinates directly from the reader's `Actors` bus.
+* **Verification over Extended Scenarios:** Programmed a suite of three validation scenarios over a **1000m road segment** and **25s duration**:
+  * **Scenario A (Constant Speed):** Target vehicle traveling at constant 60 km/h.
+  * **Scenario B (Emergency Braking):** Target vehicle cruises at 80 km/h and suddenly brakes at $-6\text{ m/s}^2$ to a complete stop.
+  * **Scenario C (Variable Speed):** Target vehicle tracks step-like velocity profiles.
+
+<p align="center">
+  <img src="images/Validation_Report_Scenario_A_Constant_Speed.png" width="32%" />
+  <img src="images/Validation_Report_Scenario_B_Emergency_Braking.png" width="32%" />
+  <img src="images/Validation_Report_Scenario_C_Variable_Speed.png" width="32%" />
+</p>
+
+* **Validation Safety Audit:** Safe spacing headway was maintained with a minimum clearance of **54.9 m** across all scenarios. Passenger comfort was preserved with deceleration values strictly bounded within the physical limit of **$\pm 0.2g$**.
+
+---
+
+### 7. Next Steps
+- [ ] Implement programmatic test suite of 9 operational scenarios (Week 12).
+- [ ] Replace offline sensor feeds with an online Extended Kalman Filter (EKF) block (Week 13).
+
 
 
